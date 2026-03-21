@@ -1,0 +1,22 @@
+{
+  "name": "chatillar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev":"node --watch server.js",
+    "start":"node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TLIdoc/CHATILLAR.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TLIdoc/CHATILLAR/issues"
+  },
+  "homepage": "https://github.com/TLIdoc/CHATILLAR#readme"
+}

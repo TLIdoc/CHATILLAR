@@ -1,0 +1,71 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-100:#f7cac9;
+    --primary-200:#5c5c5c;
+    --primary-300:#5c5c5c;
+    --accent-100:#5c5c5c;
+    --accent-200:#ebebeb;
+    --text-100:#333333;
+    --text-200:#5c5c5c;
+    --bg-100:#fffff3;
+    --bg-200:#f5f5e9;
+    --bg-300:#ccccc0;
+}
+body {
+    background-color: var(--bg-100);
+    color:var(--text-100);
+    font-family: "Unbounded" , sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+header {
+    background-color: var(--primary-100);
+    color: var(--bg-100);
+    padding: 0.3rem;
+    text-align: center;
+    box-shadow: 5px 0 10px var(--primary-200)
+}
+
+header h1 {
+    font-family: "Jersey", sans-serif;
+}
+main {
+    flex-grow: 1;
+    padding: 1rem;
+}
+main ul.messages {
+    background-color: var(--primary-200);
+    color: var(--text-200);
+    padding: 1rem, 0.3rem;
+    border-radius: 1rem;
+    list-style: none;
+    width: fit-content;
+    margin: 0.3rem;
+}
+form {
+    display: flex;
+    align-items: center;
+    background-color: var(--primary-200);
+    padding: 0.3rem;
+    gap: 0.3rem;
+}
+form input {
+    flex-grow:1;
+    background-color: var(--bg-200);
+    border-radius: 1rem;
+}
+form button{
+    border:none;
+    padding: 0.3rem 1rem;
+    background-color: var(--bg-200);
+    border-radius: 1rem;
+    cursor: pointer;
+}
