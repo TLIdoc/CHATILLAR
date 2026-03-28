@@ -6,7 +6,7 @@
 
 :root {
     --primary-100:#f7cac9;
-    --primary-200:#5c5c5c;
+    --primary-200:#ff9f40;
     --primary-300:#5c5c5c;
     --accent-100:#5c5c5c;
     --accent-200:#ebebeb;
@@ -31,7 +31,8 @@ header {
     color: var(--bg-100);
     padding: 0.3rem;
     text-align: center;
-    box-shadow: 5px 0 10px var(--primary-200)
+    box-shadow: 5px 0 10px var(--primary-200);
+    position: relative;
 }
 
 header h1 {
@@ -43,9 +44,9 @@ main {
 }
 main ul.messages {
     background-color: var(--primary-200);
-    color: var(--text-200);
+    /* color: var(--text-200); */
     padding: 1rem, 0.3rem;
-    border-radius: 1rem;
+    border-radius: 0.4rem;
     list-style: none;
     width: fit-content;
     margin: 0.3rem;
@@ -67,5 +68,15 @@ form button{
     padding: 0.3rem 1rem;
     background-color: var(--bg-200);
     border-radius: 1rem;
+    cursor: pointer;
+}
+
+.auth {
+    position: relative;
+    top: 1.5rem;
+    right: 2 rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 0.3rem;
+    border: none;
     cursor: pointer;
 }

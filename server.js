@@ -2,7 +2,7 @@ import {createServer} from "http"
 import path from "path"
 import { fileURLToPath } from "url"
 import {  readFileSync} from "fs"
-
+import { Server } from "socket.io"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 
@@ -31,6 +31,28 @@ let scriptJsFile = getStaticFile("script.js")
             res.end("error: not found")
     }
 })
+
+const io = new Server(server);
+
+io.on("connection", (socket)=>{
+    console.log(`User connected with id: ${socket.id}`)
+        let nickname = "anonim"
+
+        socket.on("new_nickname", (data)=>{
+            nickname = data
+        })
+
+    socket.on("new_message", (data)=> {
+        console.log(data)
+        io.emit("message",{
+            user: nickname,
+            message: data
+        })
+    })
+
+
+
+}) 
 
 server.listen(3000, ()=>console.log("Server on!"))
 
