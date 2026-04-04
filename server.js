@@ -3,13 +3,14 @@ import path from "path"
 import { fileURLToPath } from "url"
 import {  readFileSync} from "fs"
 import { Server } from "socket.io"
+import db, { init as initDB, getMessages, addMessage } from "./db.js"
+
+initDB()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 
 
-
-
-const server = createServer((req, res)=>{
+const server = createServer(async(req, res)=>{
     switch(req.url){
         case "/":
             let indexHtmlFile = getStaticFile("index.html")
@@ -25,6 +26,11 @@ const server = createServer((req, res)=>{
 let scriptJsFile = getStaticFile("script.js")
             res.writeHead(200, {"content-type": "applicaction/javascript"})
             res.end(scriptJsFile)
+            break;
+        case "/messages":
+            let messages = await getMessages()
+            res.writeHead(200, {"content-type": "application/json"})
+            res.end(JSON.stringify(messages))
             break;
         default:
             res.statusCode = 404
@@ -42,12 +48,13 @@ io.on("connection", (socket)=>{
             nickname = data
         })
 
-    socket.on("new_message", (data)=> {
+    socket.on("new_message", async (data)=> {
         console.log(data)
         io.emit("message",{
             user: nickname,
             message: data
         })
+        await addMessage(1, data)
     })
 
 

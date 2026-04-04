@@ -30,3 +30,12 @@ document.querySelector(".auth").addEventListener("click", ()=>{
     let nickname = prompt("напиши своє імя", "Ананімус хакор")
     if(nickname) socket.emit("new_nickname", nickname);
 })
+
+
+function getMessages(){
+    fetch("/messages").then(res=>res.json()).then(data=>{
+        console.log(data)
+        data.forEach(message => addMessage({user: message.author, message: message.content}))
+    })
+}
+getMessages()
