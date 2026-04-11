@@ -1,7 +1,7 @@
-import {createServer} from "http"
+import { createServer } from "http"
 import path from "path"
 import { fileURLToPath } from "url"
-import {  readFileSync} from "fs"
+import { readFileSync } from "fs"
 import { Server } from "socket.io"
 import db, { init as initDB, getMessages, addMessage } from "./db.js"
 
@@ -10,26 +10,41 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 
 
-const server = createServer(async(req, res)=>{
-    switch(req.url){
+const server = createServer(async (req, res) => {
+    switch (req.url) {
         case "/":
             let indexHtmlFile = getStaticFile("index.html")
-            res.writeHead(200, {"content-type": "text/html"})
+            res.writeHead(200, { "content-type": "text/html" })
             res.end(indexHtmlFile)
+            break;
+        case "/register":
+            if (req.method === "GET") {
+                let registerHtmlFile = getStaticFile("register.html")
+                res.writeHead(200, { "content-type": "text/html" })
+                res.end(registerHtmlFile)
+            }
+            else if (req.method === "POST") {
+                let data = ""
+                req.on("data", chunk => data += chunk)
+                req.on("end", () => {
+                    console.log(data)
+                    res.end()
+                })
+            }
             break;
         case "/css.css":
             let styleCssFile = getStaticFile("css.css")
-            res.writeHead(200, {"content-type": "text/css"})
+            res.writeHead(200, { "content-type": "text/css" })
             res.end(styleCssFile)
             break;
         case "/script.js":
-let scriptJsFile = getStaticFile("script.js")
-            res.writeHead(200, {"content-type": "applicaction/javascript"})
+            let scriptJsFile = getStaticFile("script.js")
+            res.writeHead(200, { "content-type": "applicaction/javascript" })
             res.end(scriptJsFile)
             break;
         case "/messages":
             let messages = await getMessages()
-            res.writeHead(200, {"content-type": "application/json"})
+            res.writeHead(200, { "content-type": "application/json" })
             res.end(JSON.stringify(messages))
             break;
         default:
@@ -40,17 +55,17 @@ let scriptJsFile = getStaticFile("script.js")
 
 const io = new Server(server);
 
-io.on("connection", (socket)=>{
+io.on("connection", (socket) => {
     console.log(`User connected with id: ${socket.id}`)
-        let nickname = "anonim"
+    let nickname = "anonim"
 
-        socket.on("new_nickname", (data)=>{
-            nickname = data
-        })
+    socket.on("new_nickname", (data) => {
+        nickname = data
+    })
 
-    socket.on("new_message", async (data)=> {
+    socket.on("new_message", async (data) => {
         console.log(data)
-        io.emit("message",{
+        io.emit("message", {
             user: nickname,
             message: data
         })
@@ -59,12 +74,12 @@ io.on("connection", (socket)=>{
 
 
 
-}) 
+})
 
-server.listen(3000, ()=>console.log("Server on!"))
+server.listen(3000, () => console.log("Server on!"))
 
-function getStaticFile(name){
-    let pathToFile = path.join(__dirname,"static", name)
+function getStaticFile(name) {
+    let pathToFile = path.join(__dirname, "static", name)
     let bufferFile = readFileSync(pathToFile)
     let data = Buffer.from(bufferFile)
     return data
