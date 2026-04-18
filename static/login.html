@@ -12,17 +12,15 @@
 </head>
 <body>
     <header>
-        <h1>REGISTER</h1>
+        <h1>LOGIN</h1>
     </header>
-    <main id="register">
+    <main id="login">
         <form>
             <label for="login">login</label>
             <input id="label" type="text" name="login" placeholder="login" required>
             <label id="label" for="password">Password</label>
             <input id="label" type="password" name="password" placeholder="Password" required>
-            <label id="label" for="confirm_password">Confirm Password</label>
-            <input id="label" type="password" name="confirm_password" placeholder="Confirm Password" required>
-            <button type="submit">Register</button>
+            <button type="submit">Login</button>
         </form>
     </main>
     <script>
@@ -31,15 +29,20 @@
             e.preventDefault()
             let data = {
                 login: e.target["login"].value,
-                password: e.target["password"].value
+                password: e.target["password"].value,
+                confirm_password: e.target["confirm_password"].value
             }
             console.log(data)
             if (data.login.length < 3) {
-                alertify.error("Login do not match")
+                alertify.error("Login must be at least 3 characters long")
                 return
             }
             if (data.password.length < 6) {
-                alertify.error("Password do not match")
+                alertify.error("Password must be at least 6 characters long")
+                return
+            }
+            if (data.password !== data.confirm_password) {
+                alertify.error("Passwords do not match")
                 return
             }
 
@@ -53,12 +56,7 @@
                 if (res.ok){
                     // navigation.navigate("/")
                 } else {
-                    alertify.error("Login failed")
-                }})
+
+                }
+            })
         })
-        
-
-    </script>
-</body>
-
-</html>

@@ -3,7 +3,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 import { readFileSync } from "fs"
 import { Server } from "socket.io"
-import db, { init as initDB, getMessages, addMessage } from "./db.js"
+import db, { init as initDB, getMessages, addMessage, isUserExist, addUser} from "./db.js"
 
 initDB()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -27,8 +27,21 @@ const server = createServer(async (req, res) => {
                 let data = ""
                 req.on("data", chunk => data += chunk)
                 req.on("end", () => {
-                    console.log(data)
-                    res.end()
+                registerUser(req, res, data)
+                })
+            }
+            break;
+                case "/login":
+            if (req.method === "GET") {
+                let loginHtmlFile = getStaticFile("login.html")
+                res.writeHead(200, { "content-type": "text/html" })
+                res.end(loginHtmlFile)
+            }
+            else if (req.method === "POST") {
+                let data = ""
+                req.on("data", chunk => data += chunk)
+                req.on("end", () => {
+                loginUser(req, res, data)
                 })
             }
             break;
@@ -36,6 +49,11 @@ const server = createServer(async (req, res) => {
             let styleCssFile = getStaticFile("css.css")
             res.writeHead(200, { "content-type": "text/css" })
             res.end(styleCssFile)
+            break;
+        case "/cssc.css":
+            let styleSCssFile = getStaticFile("cssc.css")
+            res.writeHead(200, { "content-type": "text/css" })
+            res.end(styleSCssFile)
             break;
         case "/script.js":
             let scriptJsFile = getStaticFile("script.js")
@@ -83,4 +101,40 @@ function getStaticFile(name) {
     let bufferFile = readFileSync(pathToFile)
     let data = Buffer.from(bufferFile)
     return data
+}
+
+
+async function registerUser(req, res, data) {
+    let reg = JSON.parse(data)
+    let login = reg.login
+    let password = reg.password
+    if(!login || !password){
+        res.statusCode = 400
+        res.end(JSON.stringify({error: "login and Password are required"}))
+        return
+    }
+    if(await isUserExist(login)){
+        res.statusCode = 400
+        res.end(JSON.stringify({error: "User already exists"}))
+        return
+    }
+    let result = addUser(login, password)
+    if(result){
+        res.statusCode = 201
+        res.end(JSON.stringify({message: "User created"}))
+    } else {
+        res.statusCode = 500
+        res.end(JSON.stringify({error: "Server error"}))
+    }
+}
+
+async function loginUser(req, res, data) {
+    let info = JSON.parse(data)
+    let login = info.login
+    let password = info.password
+    if(!login || !password){
+        res.statusCode = 400
+        res.end(JSON.stringify({error: "login and Password are required"}))
+        return
+    }
 }
