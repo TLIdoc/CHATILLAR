@@ -73,4 +73,15 @@ export async function addUser(login, password){
     }
 }
 
+export async function getUser(login, password){
+    let result = await db.query(`SELECT * FROM user WHERE login = ?`, [login])
+    if (result[0].length === 0) {
+        return null;
+    }
+    if (!await compare(password, result[0][0].password)) {
+        return false;
+    }
+    return result[0][0];
+}
+
 export default db;

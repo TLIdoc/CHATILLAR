@@ -1,9 +1,11 @@
-import { createServer } from "http"
+import { createServer, get } from "http"
 import path from "path"
 import { fileURLToPath } from "url"
 import { readFileSync } from "fs"
 import { Server } from "socket.io"
-import db, { init as initDB, getMessages, addMessage, isUserExist, addUser} from "./db.js"
+import db, { init as initDB, getMessages, addMessage, isUserExist, addUser, getUser } from "./db.js"
+import jwt from "jsonwebtoken"
+import cookie from "cookie"
 
 initDB()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -13,6 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const server = createServer(async (req, res) => {
     switch (req.url) {
         case "/":
+            guarded(req, res)
             let indexHtmlFile = getStaticFile("index.html")
             res.writeHead(200, { "content-type": "text/html" })
             res.end(indexHtmlFile)
@@ -27,21 +30,22 @@ const server = createServer(async (req, res) => {
                 let data = ""
                 req.on("data", chunk => data += chunk)
                 req.on("end", () => {
-                registerUser(req, res, data)
+                    registerUser(req, res, data)
                 })
             }
             break;
-                case "/login":
-            if (req.method === "GET") {
+        case "/login":
+            console.log(req.method)
+            if (req.method == "GET") {
                 let loginHtmlFile = getStaticFile("login.html")
                 res.writeHead(200, { "content-type": "text/html" })
                 res.end(loginHtmlFile)
             }
-            else if (req.method === "POST") {
+            else if (req.method == "POST") {
                 let data = ""
                 req.on("data", chunk => data += chunk)
                 req.on("end", () => {
-                loginUser(req, res, data)
+                    loginUser(req, res, data)
                 })
             }
             break;
@@ -57,7 +61,7 @@ const server = createServer(async (req, res) => {
             break;
         case "/script.js":
             let scriptJsFile = getStaticFile("script.js")
-            res.writeHead(200, { "content-type": "applicaction/javascript" })
+            res.writeHead(200, { "content-type": "application/javascript" })
             res.end(scriptJsFile)
             break;
         case "/messages":
@@ -82,7 +86,6 @@ io.on("connection", (socket) => {
     })
 
     socket.on("new_message", async (data) => {
-        console.log(data)
         io.emit("message", {
             user: nickname,
             message: data
@@ -108,23 +111,23 @@ async function registerUser(req, res, data) {
     let reg = JSON.parse(data)
     let login = reg.login
     let password = reg.password
-    if(!login || !password){
+    if (!login || !password) {
         res.statusCode = 400
-        res.end(JSON.stringify({error: "login and Password are required"}))
+        res.end(JSON.stringify({ error: "login and Password are required" }))
         return
     }
-    if(await isUserExist(login)){
+    if (await isUserExist(login)) {
         res.statusCode = 400
-        res.end(JSON.stringify({error: "User already exists"}))
+        res.end(JSON.stringify({ error: "User already exists" }))
         return
     }
     let result = addUser(login, password)
-    if(result){
+    if (result) {
         res.statusCode = 201
-        res.end(JSON.stringify({message: "User created"}))
+        res.end(JSON.stringify({ message: "User created" }))
     } else {
         res.statusCode = 500
-        res.end(JSON.stringify({error: "Server error"}))
+        res.end(JSON.stringify({ error: "Server error" }))
     }
 }
 
@@ -132,9 +135,36 @@ async function loginUser(req, res, data) {
     let info = JSON.parse(data)
     let login = info.login
     let password = info.password
-    if(!login || !password){
-        res.statusCode = 400
-        res.end(JSON.stringify({error: "login and Password are required"}))
+    let user = await getUser(login, password)
+    if(user == null) {
+        res.statusCode = 404
+        res.end(JSON.stringify({ error:"user not found" }))
         return
     }
+    if(!user){
+        res.statusCode = 401
+        res.end(JSON.stringify({ error: "Invalid login or password" }))
+        return
+    }
+    let token = jwt.sign({id: user.id, login: user.login}, "abc", {expiresIn: "1h"})
+    res.statusCode = 200
+    res.end(token)
+}
+function getCredentials(c 
+    = "") {
+    const cookies = cookie.parse(c)
+    const token = cookies?.token
+    if (!token) return null
+    let user = jwt.verify(token, "abc")
+    return user
+}
+
+function guarded(req, res) {
+    const user = getCredentials(req.headers?.cookie)
+    if(!user) {
+        res.statusCode = 401
+        res.end(JSON.stringify({ error: "Unauthorized" }))
+        return null
+    }
+    return user
 }
