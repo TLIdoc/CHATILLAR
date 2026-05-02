@@ -1,13 +1,17 @@
 import { createConnection } from "mysql2";
 import { genSalt} from "bcrypt";
 import { compare, hash } from "bcrypt";
+import { configDotenv }  from "dotenv"
+
+configDotenv()
 
 
 let db = createConnection({
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "db11_big_chat"
+    host: process.env.HOST || "localhost",
+    user: process.env.USER || "root",
+    password: process.env.PASSWORD || "root",
+    database: process.env.DATABASE || "db11_big_chat",
+    port: process.env.PORT || 3306
 }).promise();
 
 export async function init() {

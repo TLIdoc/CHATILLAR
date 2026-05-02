@@ -70,3 +70,11 @@ main {
    align-items: center;
     flex-grow: 1;
 }
+main#register {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    flex-direction: column;
+    gap: 1rem;
+}

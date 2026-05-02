@@ -7,6 +7,9 @@ import db, { init as initDB, getMessages, addMessage, isUserExist, addUser, getU
 import jwt from "jsonwebtoken"
 import cookie from "cookie"
 
+import dotenv from "dotenv"
+dotenv.config()
+
 initDB()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -15,7 +18,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const server = createServer(async (req, res) => {
     switch (req.url) {
         case "/":
-            guarded(req, res)
+            if(guarded(req, res)) return;
             let indexHtmlFile = getStaticFile("index.html")
             res.writeHead(200, { "content-type": "text/html" })
             res.end(indexHtmlFile)
@@ -73,13 +76,22 @@ const server = createServer(async (req, res) => {
             res.statusCode = 404
             res.end("error: not found")
     }
-})
+});
 
 const io = new Server(server);
 
+io.use((socket , next)=> {
+    const cookie = socket.handshake.auth.cookie
+    const credentials = getCredentials(cookie)
+    if(credentials == null || credentials == "error"){
+        next(new error("no auth"))
+    }
+    socket.credentials = credentials
+    next();
+})
 io.on("connection", (socket) => {
     console.log(`User connected with id: ${socket.id}`)
-    let nickname = "anonim"
+    let nickname = socket.credentials.login
 
     socket.on("new_nickname", (data) => {
         nickname = data
@@ -90,7 +102,7 @@ io.on("connection", (socket) => {
             user: nickname,
             message: data
         })
-        await addMessage(1, data)
+        await addMessage(socket.credentials.id, data)
     })
 
 
@@ -146,7 +158,7 @@ async function loginUser(req, res, data) {
         res.end(JSON.stringify({ error: "Invalid login or password" }))
         return
     }
-    let token = jwt.sign({id: user.id, login: user.login}, "abc", {expiresIn: "1h"})
+    let token = jwt.sign({id: user.id, login: user.login}, process.end.SECRET, {expiresIn: "1h"})
     res.statusCode = 200
     res.end(token)
 }
@@ -155,8 +167,13 @@ function getCredentials(c
     const cookies = cookie.parse(c)
     const token = cookies?.token
     if (!token) return null
-    let user = jwt.verify(token, "abc")
+    try{
+            let user = jwt.verify(token, process.env.SECRET)
     return user
+    }catch(error){
+        console.log(error.message)
+        return "error"
+    }
 }
 
 function guarded(req, res) {
@@ -165,6 +182,11 @@ function guarded(req, res) {
         res.statusCode = 401
         res.end(JSON.stringify({ error: "Unauthorized" }))
         return null
+        if(user == null || user == "error"){
+            res.writeHead(302, {"location": "/login"})
+            res.end
+            return true
+        }
     }
     return user
 }

@@ -24,6 +24,7 @@
             <input id="label" type="password" name="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Register</button>
         </form>
+        <a href="/login">Already have account?🤑</a>
     </main>
     <script>
         const form = document.querySelector("form")
@@ -51,7 +52,7 @@
                 body: JSON.stringify(data)
             }).then(res => {
                 if (res.ok){
-                    // navigation.navigate("/")
+                    navigation.navigate("/")
                 } else {
                     alertify.error("Login failed")
                 }})
